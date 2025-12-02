@@ -4,10 +4,13 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const OpenAI = require("openai");
 const rateLimit = require("express-rate-limit");
+const morgan = require("morgan");
+
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(morgan("dev"));
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -27,7 +30,7 @@ function authenticate(req, res, next) {
 
 const chatLimiter = rateLimit({
   windowMs: 60 * 1000,      
-  max: 3,                  
+  max: 20,                  
   standardHeaders: true,    
   legacyHeaders: false,
   message: { error: "Too many requests, slow down." }
@@ -42,13 +45,17 @@ const pingLimiter = rateLimit({
 });
 
 app.get("/ping", authenticate, pingLimiter, (req, res) => {
+  console.log("Ping received");
   res.json({ ok: true });
 });
 
 app.post("/chat", authenticate, chatLimiter, async (req, res) => {
   try {
     const { prompt } = req.body;
+    console.log("Received prompt:", prompt);
+
     if (!prompt) {
+      console.warn("Missing prompt in request");
       return res.status(400).json({ error: "Missing 'prompt' in body" });
     }
 
@@ -59,6 +66,7 @@ app.post("/chat", authenticate, chatLimiter, async (req, res) => {
 
     const output = response.output[0].content[0].text;
 
+    console.log("Final output:", output);
     return res.json({
       reply: output,
     });
