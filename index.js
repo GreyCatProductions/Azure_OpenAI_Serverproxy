@@ -51,17 +51,39 @@ app.get("/ping", authenticate, pingLimiter, (req, res) => {
 
 app.post("/chat", authenticate, chatLimiter, async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, responseClassJson } = req.body;
     console.log("Received prompt:", prompt);
+    console.log("Received responseClassJson:", responseClassJson);
 
     if (!prompt) {
       console.warn("Missing prompt in request");
       return res.status(400).json({ error: "Missing 'prompt' in body" });
     }
 
+    if (!responseClassJson) {
+      console.warn("Missing responseClassJson in request");
+      return res.status(400).json({ error: "Missing 'responseClassJson' in body" });
+    }
+
+    let schema;
+    try {
+      schema = JSON.parse(responseClassJson);
+    } catch (e) {
+      console.error("Invalid JSON schema:", e);
+      return res.status(400).json({ error: "Invalid 'responseClassJson' JSON" });
+    }
+
     const response = await client.responses.create({
       model: "gpt-4o-mini",
       input: prompt,
+        text: {
+          format: {
+            type: "json_schema",
+            name: schema.title || "unity_response", 
+            schema,        
+            strict: true   
+          }
+        }
     });
 
     const output = response.output[0].content[0].text;
