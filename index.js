@@ -2,9 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const OpenAI = require("openai");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
+const { AzureOpenAI } = require("openai");
 
 
 const app = express();
@@ -16,8 +16,10 @@ app.use(bodyParser.json());
 
 const GAME_API_KEY = process.env.AFF_API_KEY;
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const client = new AzureOpenAI({
+  apiKey: process.env.AZURE_API_KEY,
+  apiVersion:"2025-03-01-preview",
+  endpoint:"https://wirtschaftsinformatik-projekt.openai.azure.com/"
 });
 
 function authenticate(req, res, next) {
@@ -74,7 +76,7 @@ app.post("/chat", authenticate, chatLimiter, async (req, res) => {
     }
 
     const response = await client.responses.create({
-      model: "gpt-4o-mini",
+      model: process.env.AZURE_OPENAI_DEPLOYMENT,
       input: prompt,
         text: {
           format: {
