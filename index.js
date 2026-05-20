@@ -151,7 +151,7 @@ app.post("/chat", authenticate, chatLimiter, async (req, res) => {
         max_tokens: 4096,
         messages: [{ role: "user", content: prompt }],
         output_config: {
-          format: { type: "json_schema", name: "response", schema: cleaned },
+          format: { type: "json_schema", schema: cleaned },
         },
       });
       output = response.content[0].text;
