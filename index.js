@@ -144,12 +144,13 @@ app.post("/chat", authenticate, chatLimiter, async (req, res) => {
       });
       output = response.output[0].content[0].text;
     } else {
+      const cleaned = sanitizeSchemaForClaude(schema);
       const response = await client.messages.create({
         model: process.env.CLAUDE_MODEL,
         max_tokens: 4096,
         messages: [{ role: "user", content: prompt }],
         output_config: {
-          format: { type: "json_schema", schema },
+          format: { type: "json_schema", cleaned },
         },
       });
       output = response.content[0].text;
