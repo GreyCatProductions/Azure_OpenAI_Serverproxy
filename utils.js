@@ -10,3 +10,5 @@ function sanitizeSchemaForClaude(schema) {
     }
     return result;
 }
+
+module.exports = { sanitizeSchemaForClaude };

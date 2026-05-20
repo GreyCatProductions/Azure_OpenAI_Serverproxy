@@ -5,6 +5,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const readline = require("readline");
+const { sanitizeSchemaForClaude } = require("./utils");
 
 const app = express();
 const port = process.env.PORT || 3000;
